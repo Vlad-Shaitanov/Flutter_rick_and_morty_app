@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rick_and_morty_app/bloc/character_bloc.dart';
@@ -74,7 +72,6 @@ class _SearchPageState extends State<SearchPage> {
         Expanded(
           child: state.when(
               loading: () {
-                // Процесс загрузки персонажа
                 return Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -102,20 +99,23 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _customListView(List<Results> currentResults) {
-    return ListView.separated(
-      separatorBuilder: (_, index) => const SizedBox(
-        height: 5,
-      ),
-      itemCount: currentResults.length,
-      shrinkWrap: true,
-      // ListView будет занимать только нужное пространство в зависимости от количества элементов
-      itemBuilder: (context, index) {
-        final result = currentResults[index];
-        return Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 3, bottom: 3),
-          child: CustomListTile(result: result)
-        );
-      },
-    );
+    // Обновление экрана при прокрутке
+
+      return ListView.separated(
+        separatorBuilder: (_, index) => const SizedBox(
+          height: 5,
+        ),
+        itemCount: currentResults.length,
+        shrinkWrap: true,
+        // ListView будет занимать только нужное пространство в зависимости от количества элементов
+        itemBuilder: (context, index) {
+          final result = currentResults[index];
+          return Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 3, bottom: 3),
+            child: CustomListTile(result: result)
+          );
+        },
+      );
+
   }
 }

@@ -40,6 +40,10 @@ dependencies:
   json_annotation: ^4.8.1
   http: ^0.13.4
   flutter_bloc: ^8.1.3
+  # Библиотека для отображения изображений из Интернета и хранения их в каталоге кеша.
+  cached_network_image: ^3.2.3
+  # виджет, предоставляемый раскрывающемуся компоненту прокрутки, обновляет и загружает load.support
+  pull_to_refresh: ^2.0.0
 
 dev_dependencies:
   flutter_test:
