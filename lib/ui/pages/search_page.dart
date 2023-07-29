@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:rick_and_morty_app/bloc/character_bloc.dart';
 import 'package:rick_and_morty_app/ui/widgets/custom_list_tile.dart';
 
@@ -17,6 +18,9 @@ class _SearchPageState extends State<SearchPage> {
   List<Results> _currentResults = []; // Здесь будет массив персонажей
   int _currentPage = 1; // Здесь будет текущая страница
   String _currentSearchStr = ''; // Текущее значение поиска
+
+  final RefreshController refreshController = RefreshController();
+  bool _isPagination = false;
 
   @override
   void initState() {
@@ -72,22 +76,33 @@ class _SearchPageState extends State<SearchPage> {
         Expanded(
           child: state.when(
               loading: () {
-                return Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    // Выравнивание оси по центру
-                    children: const [
-                      CircularProgressIndicator(strokeWidth: 2),
-                      SizedBox(width: 10),
-                      Text("Loading...")
-                    ],
-                  ),
-                );
+                if(!_isPagination){
+                  return Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      // Выравнивание оси по центру
+                      children: const [
+                        CircularProgressIndicator(strokeWidth: 2),
+                        SizedBox(width: 10),
+                        Text("Loading...")
+                      ],
+                    ),
+                  );
+                } else {
+                  return _customListView(_currentResults);
+                }
               },
               loaded: (characterLoaded) {
                 _currentCharacter = characterLoaded;
-                _currentResults = _currentCharacter
-                    .results; // Записываем поле resuts из ответа
+                debugPrint('_currentCharacter $_currentCharacter');
+                if(_isPagination){
+                  _currentResults = List.from(_currentResults)..addAll(_currentCharacter.results); //Объединение массива текущих персонажей  и новых
+                  refreshController.loadComplete();
+                  _isPagination = false;
+                } else {
+                  _currentResults = _currentCharacter.results; // Записываем поле resuts из ответа
+                }
+
                 return _currentResults.isNotEmpty
                     ? _customListView(_currentResults)
                     : const SizedBox();
@@ -101,20 +116,35 @@ class _SearchPageState extends State<SearchPage> {
   Widget _customListView(List<Results> currentResults) {
     // Обновление экрана при прокрутке
 
-      return ListView.separated(
-        separatorBuilder: (_, index) => const SizedBox(
-          height: 5,
-        ),
-        itemCount: currentResults.length,
-        shrinkWrap: true,
-        // ListView будет занимать только нужное пространство в зависимости от количества элементов
-        itemBuilder: (context, index) {
-          final result = currentResults[index];
-          return Padding(
-            padding: const EdgeInsets.only(left: 16, right: 16, top: 3, bottom: 3),
-            child: CustomListTile(result: result)
-          );
+      return SmartRefresher(
+        controller: refreshController,
+        enablePullUp: true,
+        enablePullDown: false,
+        onLoading: () {
+          _isPagination = true;
+          _currentPage++;
+
+          if(_currentPage <= _currentCharacter.info.pages){
+            context.read<CharacterBloc>().add(CharacterEvent.fetch(name: _currentSearchStr, page: _currentPage));
+          } else {
+            refreshController.loadNoData();
+          }
         },
+        child: ListView.separated(
+          separatorBuilder: (_, index) => const SizedBox(
+            height: 5,
+          ),
+          itemCount: currentResults.length,
+          shrinkWrap: true,
+          // ListView будет занимать только нужное пространство в зависимости от количества элементов
+          itemBuilder: (context, index) {
+            final result = currentResults[index];
+            return Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 3, bottom: 3),
+              child: CustomListTile(result: result)
+            );
+          },
+        ),
       );
 
   }
