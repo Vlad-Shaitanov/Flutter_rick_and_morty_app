@@ -20,11 +20,12 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
 
       try {
         Character _characterLoaded =
-            await characterRepo.getCharacter(event.page, event.name);
+            await characterRepo.getCharacter(event.page, event.name).timeout(const Duration(seconds: 5));
 
         emit(CharacterState.loaded(characterLoaded: _characterLoaded));
       } catch (e, st) {
         emit(const CharacterState.error());
+        rethrow; // Пускаем ошибку дальше (попадет в bloc_observable)
       }
     });
   }

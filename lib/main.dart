@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rick_and_morty_app/bloc_observable.dart';
 import 'package:rick_and_morty_app/ui/pages/home_page.dart';
 
+
 void main() {
+  Bloc.observer = CharacterBlocObservable(); // Логгирование событий и ошибок bloc
   runApp(const MyApp());
 }
 
