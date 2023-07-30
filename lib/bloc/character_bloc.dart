@@ -1,16 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:rick_and_morty_app/data/models/character.dart';
 import 'package:rick_and_morty_app/data/repositories/character_repo.dart';
 
 part 'character_bloc.freezed.dart';
 
-//part 'character_bloc.g.dart';
+part 'character_bloc.g.dart';
 part 'character_event.dart';
 
 part 'character_state.dart';
 
-class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
+class CharacterBloc extends Bloc<CharacterEvent, CharacterState> with HydratedMixin {
   final CharacterRepo characterRepo;
 
   CharacterBloc({required this.characterRepo})
@@ -28,5 +29,17 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
         rethrow; // Пускаем ошибку дальше (попадет в bloc_observable)
       }
     });
+  }
+
+  @override
+  CharacterState? fromJson(Map<String, dynamic> json) {
+    // Отвечает за восстановление состояния
+    return CharacterState.fromJson(json);
+  }
+
+  @override
+  Map<String, dynamic>? toJson(CharacterState state) {
+    // Отвечает за сохранение состояния на устройстве
+    return state.toJson();
   }
 }

@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:rick_and_morty_app/bloc/character_bloc.dart';
 import 'package:rick_and_morty_app/ui/widgets/custom_list_tile.dart';
@@ -22,14 +25,22 @@ class _SearchPageState extends State<SearchPage> {
   final RefreshController refreshController = RefreshController();
   bool _isPagination = false;
 
+  Timer? searchDebounce;
+
+  final _storage = HydratedBloc.storage;
+
   @override
   void initState() {
-    if (_currentResults.isEmpty) {
-      // Если масссив персонажей пустой, то делаем запрос
-      context
-          .read<CharacterBloc>()
-          .add(const CharacterEvent.fetch(name: '', page: 1));
+    if(_storage.runtimeType.toString().isEmpty){
+      // При запуске приложения делаем запрос, если хранилище пустое
+      if (_currentResults.isEmpty) {
+        // Если масссив персонажей пустой, то делаем запрос
+        context
+            .read<CharacterBloc>()
+            .add(const CharacterEvent.fetch(name: '', page: 1));
+      }
     }
+
     // Получение данных
     context
         .read<CharacterBloc>()
@@ -67,9 +78,13 @@ class _SearchPageState extends State<SearchPage> {
               _currentResults =
                   []; // Очищаем массив персонажей перед началом поиска
               _currentSearchStr = value;
-              context
-                  .read<CharacterBloc>()
-                  .add(CharacterEvent.fetch(name: value, page: _currentPage));
+
+              searchDebounce?.cancel();// Сброс таймера
+              searchDebounce = Timer(const Duration(milliseconds: 500), () {
+                context
+                    .read<CharacterBloc>()
+                    .add(CharacterEvent.fetch(name: value, page: _currentPage));
+              });
             },
           ),
         ),

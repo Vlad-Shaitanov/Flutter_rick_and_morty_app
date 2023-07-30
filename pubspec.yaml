@@ -44,6 +44,10 @@ dependencies:
   cached_network_image: ^3.2.3
   # виджет, предоставляемый раскрывающемуся компоненту прокрутки, обновляет и загружает load.support
   pull_to_refresh: ^2.0.0
+  # Расширение package:bloc, которое автоматически сохраняется и восстанавливает состояния блоков и кубитов.
+  hydrated_bloc: ^9.1.2
+  # Пакет для поиска часто используемых мест в файловой системе. Поддерживает Android, iOS, Linux, macOS и Windows.
+  path_provider: ^2.0.15
 
 dev_dependencies:
   flutter_test:
